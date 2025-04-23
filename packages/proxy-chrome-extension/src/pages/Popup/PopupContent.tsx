@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { LocationIcon } from "../../assets/icons";
+import {
+  ShieldIcon,
+  TimeIcon,
+  LightningIcon,
+  LocationIcon,
+} from "../../assets/icons";
 import { StatItem } from "../../components/StatItem";
-import { formatBytes } from "../../lib/formatBytes";
 import { cn } from "../../lib/utils";
 import { ServerLocation } from "../../services/proxyDispatcher.service";
 import { getProxyState } from "../../services/storage.service";
@@ -28,6 +32,7 @@ export default function PopupContent() {
     LocationsFetchStatus.IDLE
   );
   const [error, setError] = useState<string | null>(null);
+  const [ipAddress, setIpAddress] = useState<string>("");
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [countries, setCountries] = useState<ServerLocation[]>([]);
@@ -69,6 +74,7 @@ export default function PopupContent() {
           const secs = Math.floor((Date.now() - connection_time) / 1000);
           setConnectionTime(secs);
           // could also initialize dataUsage/connectionSpeed if persisted
+          fetchIpAddress();
         }
       });
     }
@@ -85,24 +91,10 @@ export default function PopupContent() {
       setConnectionTime(0);
       setDataUsage({ up: 0, down: 0 });
       setConnectionSpeed({ up: 0, down: 0 });
+      setIpAddress("");
     }
 
     return () => clearInterval(interval);
-  }, [connectionStatus]);
-
-  useEffect(() => {
-    let usageInterval: NodeJS.Timeout;
-
-    if (connectionStatus === ConnectionStatus.CONNECTED) {
-      // Removed data usage and speed fetching
-    } else {
-      // Reset usage and speed when not connected
-    }
-
-    // Cleanup interval if it existed
-    return () => {
-      // no interval
-    };
   }, [connectionStatus]);
 
   const handleConnect = () => {
@@ -114,7 +106,9 @@ export default function PopupContent() {
         (resp) => {
           if (resp.tunnel?.port) {
             setConnectionStatus(ConnectionStatus.CONNECTED);
+            fetchIpAddress();
           } else {
+            setConnectionStatus(ConnectionStatus.OFFLINE);
             setError(resp.error || "Connection failed");
           }
         }
@@ -144,20 +138,26 @@ export default function PopupContent() {
       .padStart(2, "0")}`;
   };
 
+  const fetchIpAddress = async () => {
+    try {
+      const response = await fetch("https://icanhazip.com");
+      const text = await response.text();
+      setIpAddress(text.trim());
+    } catch (e) {
+      console.error("Failed to fetch IP address", e);
+    }
+  };
+
   return (
     <div className="w-[360px] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-visible border border-gray-700 shadow-2xl">
       {/* Header */}
       <div className="relative h-16 px-4 flex items-center justify-between bg-gradient-to-r from-purple-900/40 to-blue-900/40 border-b border-gray-700">
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            {/* <Shield className="w-8 h-8 text-cyan-400" /> */}
-            <div className="absolute inset-0 rounded-full" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-              Voyagr VPN
-            </h1>
-            <div className="text-xs text-gray-400">Powered by Taofu</div>
+        <div className="w-100 p-2 flex flex-col items-center justify-center gap-1">
+          <h1 className="text-[1.5rem] font-bold text-center bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+            Voyagr VPN
+          </h1>
+          <div className="text-xs font-bold text-gray-400">
+            Powered by Taofu
           </div>
         </div>
         <div
@@ -169,11 +169,19 @@ export default function PopupContent() {
           )}
         />
       </div>
+      <div className="flex justify-center items-center pt-4">
+        <ShieldIcon
+          width="120"
+          height="120"
+          active={connectionStatus === ConnectionStatus.CONNECTED}
+        />
+      </div>
 
       <div className="p-4 space-y-4">
         <div className="space-y-2">
-          <label className="text-xs text-gray-400 flex items-center gap-1">
-            SELECT LOCATION
+          <label className="text-xs font-bold text-gray-400 flex items-center gap-2">
+            <LocationIcon />
+            Select Location
           </label>
           <div className="relative">
             <button
@@ -182,7 +190,9 @@ export default function PopupContent() {
               disabled={connectionStatus === ConnectionStatus.CONNECTED}
             >
               <div className="flex items-center gap-2">
-                <span className="text-xl">{selectedCountry?.flag}</span>
+                <span className="text-md font-bold">
+                  {selectedCountry?.id?.toUpperCase()}
+                </span>
                 <span>{selectedCountry?.name}</span>
               </div>
             </button>
@@ -196,13 +206,15 @@ export default function PopupContent() {
                 {countries.map((country) => (
                   <li key={country.id}>
                     <button
-                      className="w-full px-4 py-2 text-left flex items-center gap-2 hover:bg-gray-700 transition-colors"
+                      className="w-full px-4 py-3 text-left flex items-center gap-2 hover:bg-gray-700 transition-colors"
                       onClick={() => {
                         setSelectedCountry(country);
                         setLocationsStatus(LocationsFetchStatus.IDLE);
                       }}
                     >
-                      <span className="text-xl">{country.flag}</span>
+                      <span className="text-md font-bold">
+                        {country.id.toUpperCase()}
+                      </span>
                       <span>{country.name}</span>
                     </button>
                   </li>
@@ -237,7 +249,7 @@ export default function PopupContent() {
           />
           <div className="flex items-center justify-center gap-2">
             {connectionStatus === ConnectionStatus.OFFLINE ? (
-              <LocationIcon />
+              <LightningIcon />
             ) : null}
             {connectionStatus === ConnectionStatus.CONNECTING ? (
               <>Connecting...</>
@@ -262,11 +274,21 @@ export default function PopupContent() {
             Connection Statistics
           </h3>
 
-          <div className="grid grid-cols-2 gap-2">
-            <StatItem label="Location" value={selectedCountry?.name} />
+          <div className="grid grid-cols-2 gap-x-2 gap-y-4">
             <StatItem
+              icon="🏳️"
+              label="Location"
+              value={selectedCountry?.name}
+            />
+            <StatItem
+              icon={<TimeIcon />}
               label="Connected Time"
               value={formatTime(connectionTime)}
+            />
+            <StatItem
+              icon={<LocationIcon />}
+              label="IP Address"
+              value={ipAddress}
             />
           </div>
 

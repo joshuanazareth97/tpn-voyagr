@@ -17,7 +17,7 @@ export function StatItem({ icon, label, value }: StatItemProps) {
       </div>
       <div>
         <div className="text-xs text-gray-400">{label}</div>
-        <div className="font-medium">{value ?? "—"}</div>
+        <div className="font-medium">{value || "- -"}</div>
       </div>
     </div>
   );

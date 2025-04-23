@@ -68,21 +68,28 @@ export const DataIcon = () => (
   </svg>
 );
 
-export const ShieldIcon = () => (
-  <svg
-    width="20"
-    height="20"
-    viewBox="0 0 20 20"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M10 0L0 4V10C0 15.5 4.3 20.7 10 22C15.7 20.7 20 15.5 20 10V4L10 0ZM10 20.1C5.3 18.8 2 14.6 2 10V5.2L10 2.1L18 5.2V10C18 14.6 14.7 18.8 10 20.1Z"
-      fill="#26D2FB"
-    />
-    <path d="M9 14L5 10L6.4 8.6L9 11.2L14.6 5.6L16 7L9 14Z" fill="#26D2FB" />
-  </svg>
-);
+export const ShieldIcon = ({ active, width, height }) => {
+  return (
+    <svg
+      width={width || 20}
+      height={height || 20}
+      viewBox="0 0 20 25"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M10 0L0 4V10C0 15.5 4.3 20.7 10 22C15.7 20.7 20 15.5 20 10V4L10 0ZM10 20.1C5.3 18.8 2 14.6 2 10V5.2L10 2.1L18 5.2V10C18 14.6 14.7 18.8 10 20.1Z"
+        fill="#26D2FB"
+      />
+      {active ? (
+        <path
+          d="M9 14L5 10L6.4 8.6L9 11.2L14.6 5.6L16 7L9 14Z"
+          fill="#26D2FB"
+        />
+      ) : null}
+    </svg>
+  );
+};
 
 export const LightningIcon = () => (
   <svg
