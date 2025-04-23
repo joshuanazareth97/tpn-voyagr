@@ -92,26 +92,17 @@ export default function PopupContent() {
 
   useEffect(() => {
     let usageInterval: NodeJS.Timeout;
+
     if (connectionStatus === ConnectionStatus.CONNECTED) {
-      const fetchStats = () => {
-        chrome.runtime.sendMessage({ action: "getDataUsage" }, (resp) => {
-          if (resp?.up != null && resp?.down != null) {
-            setDataUsage({ up: resp.up, down: resp.down });
-          }
-        });
-        chrome.runtime.sendMessage({ action: "getConnectionSpeed" }, (resp) => {
-          if (resp?.up != null && resp?.down != null) {
-            setConnectionSpeed({ up: resp.up, down: resp.down });
-          }
-        });
-      };
-      fetchStats();
-      usageInterval = setInterval(fetchStats, 1000);
+      // Removed data usage and speed fetching
     } else {
-      setDataUsage({ up: 0, down: 0 });
-      setConnectionSpeed({ up: 0, down: 0 });
+      // Reset usage and speed when not connected
     }
-    return () => clearInterval(usageInterval);
+
+    // Cleanup interval if it existed
+    return () => {
+      // no interval
+    };
   }, [connectionStatus]);
 
   const handleConnect = () => {
@@ -277,11 +268,6 @@ export default function PopupContent() {
               label="Connected Time"
               value={formatTime(connectionTime)}
             />
-            <StatItem
-              label="Speed"
-              value={`${formatBytes(connectionSpeed.down)}/s`}
-            />
-            <StatItem label="Data Usage" value={formatBytes(dataUsage.down)} />
           </div>
 
           {connectionStatus === ConnectionStatus.CONNECTING && (

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Voyagr VPN",
   "description": "Secure your browsing experience by connecting seamlessly to Taofu's decentralized VPN infrastructure",
-  "permissions": ["proxy", "storage", "sockets"],
+  "permissions": ["proxy", "storage"],
   "host_permissions": ["<all_urls>"],
   "options_page": "options.html",
   "background": { "service_worker": "background.bundle.js" },
