@@ -1,0 +1,14 @@
+[Interface]
+Address = 10.13.13.2
+PrivateKey = qOWkFiLQniWzCEo0z+YYOn9yTmDXqwjYKXaUYLLVvHI=
+ListenPort = 51820
+DNS = 10.13.13.1
+
+[Peer]
+PublicKey = GQGwPdkTWIytvQf2XjJs5d0bY0291exnFigZZXTzBiw=
+PresharedKey = aCVDbw+3UwJCvl1Uluth7eERGbj5MSFggLLNC2L4Fbs=
+Endpoint = 135.181.36.123:51820
+AllowedIPs = 0.0.0.0/0, ::/0
+
+[Socks5]
+BindAddress = 0.0.0.0:1080

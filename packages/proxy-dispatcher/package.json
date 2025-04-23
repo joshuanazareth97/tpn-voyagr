@@ -1,0 +1,17 @@
+{
+  "name": "@tpn-voyagr/dispatcher",
+  "version": "1.0.0",
+  "description": "Script for TPN Proxy",
+  "main": "src/index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "nodemon .",
+    "build": "echo \"No build step required\" && exit 0"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
