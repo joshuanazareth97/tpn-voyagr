@@ -1,64 +1,86 @@
-// filepath: /home/joshua/development/endgame_hackathon/tpn-proxy/packages/proxy-chrome-extension/src/pages/Popup/content.tsx
 import React, { useState, useEffect } from "react";
 import {
-  Shield,
-  Globe,
-  Wifi,
-  Database,
-  ChevronDown,
-  Clock,
-  BarChart3,
-  Zap,
-} from "lucide-react";
+  ServerLocation,
+  TunnelResponse,
+} from "../../services/proxyDispatcher.service";
 import { LocationIcon } from "../../assets/icons";
 import { cn } from "../../lib/utils";
+import { getProxyState } from "../../services/storage.service";
 
-const countries = [
-  { id: "us", name: "United States", flag: "🇺🇸", latency: "45ms" },
-  { id: "jp", name: "Japan", flag: "🇯🇵", latency: "120ms" },
-  { id: "uk", name: "United Kingdom", flag: "🇬🇧", latency: "85ms" },
-  { id: "de", name: "Germany", flag: "🇩🇪", latency: "90ms" },
-  { id: "sg", name: "Singapore", flag: "🇸🇬", latency: "150ms" },
-  { id: "ca", name: "Canada", flag: "🇨🇦", latency: "60ms" },
-  { id: "au", name: "Australia", flag: "🇦🇺", latency: "180ms" },
-];
+enum ConnectionStatus {
+  OFFLINE,
+  CONNECTING,
+  CONNECTED,
+}
+
+enum LocationsFetchStatus {
+  IDLE,
+  LOADING,
+  SUCCESS,
+  ERROR,
+}
 
 export default function PopupContent() {
-  const [isConnected, setIsConnected] = useState(false);
+  // replace boolean flags with enum states
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>(
+    ConnectionStatus.OFFLINE
+  );
+  const [locationsStatus, setLocationsStatus] = useState<LocationsFetchStatus>(
+    LocationsFetchStatus.IDLE
+  );
+  const [error, setError] = useState<string | null>(null);
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedCountry, setSelectedCountry] = useState(countries[0]);
+  const [countries, setCountries] = useState<ServerLocation[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState<ServerLocation | null>(
+    null
+  );
   const [connectionTime, setConnectionTime] = useState(0);
   const [dataUsage, setDataUsage] = useState({ up: 0, down: 0 });
   const [connectionSpeed, setConnectionSpeed] = useState({ up: 0, down: 0 });
-  const [apiResponse, setApiResponse] = useState<any>(null);
 
-  // Example function to make API call with fetch
-  const makeApiCall = async (url: string): Promise<any> => {
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      setApiResponse(data);
-      return data;
-    } catch (error) {
-      console.error("Error making API call:", error);
-      return null;
+  // Load server locations from background
+  useEffect(() => {
+    chrome.runtime.sendMessage({ action: "getServerLocations" }, (resp) => {
+      if (resp?.locations) {
+        setCountries(resp.locations);
+        setSelectedCountry(resp.locations[0] || null);
+      } else {
+        setError("Failed to load locations");
+      }
+      setLocationsStatus(LocationsFetchStatus.SUCCESS);
+    });
+  }, []);
+
+  // Rehydrate proxy config & metadata when popup opens
+  useEffect(() => {
+    // Wait until countries are loaded to match serverId
+    if (locationsStatus === LocationsFetchStatus.SUCCESS) {
+      getProxyState().then((state) => {
+        if (!state) return;
+        const { proxyMetadata } = state;
+        if (proxyMetadata?.tunnel?.port) {
+          setConnectionStatus(ConnectionStatus.CONNECTED);
+          // set selected country based on stored metadata
+          const saved = proxyMetadata.serverId;
+          const match = countries.find((c) => c.id === saved);
+          if (match) setSelectedCountry(match);
+          // calculate elapsed connection time
+          const { connection_time = 0 } = proxyMetadata;
+          const secs = Math.floor((Date.now() - connection_time) / 1000);
+          setConnectionTime(secs);
+          // could also initialize dataUsage/connectionSpeed if persisted
+        }
+      });
     }
-  };
+  }, [locationsStatus]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
-    if (isConnected) {
+    if (connectionStatus === ConnectionStatus.CONNECTED) {
       interval = setInterval(() => {
         setConnectionTime((prev) => prev + 1);
-        setDataUsage((prev) => ({
-          up: prev.up + Math.random() * 0.05,
-          down: prev.down + Math.random() * 0.1,
-        }));
-        setConnectionSpeed({
-          up: 0.5 + Math.random() * 1.5,
-          down: 1.5 + Math.random() * 3,
-        });
       }, 1000);
     } else {
       setConnectionTime(0);
@@ -67,16 +89,36 @@ export default function PopupContent() {
     }
 
     return () => clearInterval(interval);
-  }, [isConnected]);
+  }, [connectionStatus]);
 
   const handleConnect = () => {
-    if (!isConnected) {
-      // Simulate connection delay
-      setTimeout(() => {
-        setIsConnected(true);
-      }, 1500);
+    if (connectionStatus === ConnectionStatus.OFFLINE && selectedCountry) {
+      setConnectionStatus(ConnectionStatus.CONNECTING);
+      setError(null);
+      chrome.runtime.sendMessage(
+        { action: "connectToServer", serverId: selectedCountry.id },
+        (resp) => {
+          if (resp.tunnel?.port) {
+            setConnectionStatus(ConnectionStatus.CONNECTED);
+          } else {
+            setError(resp.error || "Connection failed");
+          }
+        }
+      );
     } else {
-      setIsConnected(false);
+      // Send disconnect request to background
+      setConnectionStatus(ConnectionStatus.CONNECTING);
+      chrome.runtime.sendMessage({ action: "disconnectFromServer" }, (resp) => {
+        console.log("RESP", resp);
+        if (resp.success) {
+          setConnectionStatus(ConnectionStatus.OFFLINE);
+          setConnectionTime(0);
+          setDataUsage({ up: 0, down: 0 });
+          setConnectionSpeed({ up: 0, down: 0 });
+        } else {
+          setError(resp.error || "Disconnection failed");
+        }
+      });
     }
   };
 
@@ -95,7 +137,7 @@ export default function PopupContent() {
   };
 
   return (
-    <div className="w-[360px] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden border border-gray-700 shadow-2xl">
+    <div className="w-[360px] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-visible border border-gray-700 shadow-2xl">
       {/* Header */}
       <div className="relative h-16 px-4 flex items-center justify-between bg-gradient-to-r from-purple-900/40 to-blue-900/40 border-b border-gray-700">
         <div className="flex items-center gap-2">
@@ -113,7 +155,9 @@ export default function PopupContent() {
         <div
           className={cn(
             "w-3 h-3 rounded-full",
-            isConnected ? "bg-green-400" : "bg-red-400"
+            connectionStatus === ConnectionStatus.CONNECTED
+              ? "bg-green-400"
+              : "bg-red-400"
           )}
         />
       </div>
@@ -128,12 +172,12 @@ export default function PopupContent() {
           <div className="relative">
             <button
               className="w-full p-3 flex items-center justify-between bg-gray-800/50 border border-gray-700 rounded-lg hover:bg-gray-700/50 transition-colors"
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              disabled={isConnected}
+              onClick={() => setIsDropdownOpen((open) => !open)}
+              disabled={connectionStatus === ConnectionStatus.CONNECTED}
             >
               <div className="flex items-center gap-2">
-                <span className="text-xl">{selectedCountry.flag}</span>
-                <span>{selectedCountry.name}</span>
+                <span className="text-xl">{selectedCountry?.flag}</span>
+                <span>{selectedCountry?.name}</span>
               </div>
               {/* <ChevronDown
                 className={cn(
@@ -142,31 +186,29 @@ export default function PopupContent() {
                 )}
               /> */}
             </button>
-
-            {isDropdownOpen && (
-              <div className="absolute z-10 mt-1 w-full bg-gray-800 border border-gray-700 rounded-lg overflow-hidden shadow-xl">
-                <div className="max-h-60 overflow-y-auto py-1">
-                  {countries.map((country) => (
+            {locationsStatus === LocationsFetchStatus.LOADING && (
+              <div>Loading locations...</div>
+            )}
+            {error && <div className="text-red-500 text-sm mt-1">{error}</div>}
+            {locationsStatus === LocationsFetchStatus.SUCCESS &&
+            isDropdownOpen ? (
+              <ul className="absolute mt-1 w-full bg-gray-800 border border-gray-700 rounded-lg max-h-60 overflow-auto z-10">
+                {countries.map((country) => (
+                  <li key={country.id}>
                     <button
-                      key={country.id}
-                      className="w-full p-2 flex items-center justify-between hover:bg-gray-700/50 transition-colors"
+                      className="w-full px-4 py-2 text-left flex items-center gap-2 hover:bg-gray-700 transition-colors"
                       onClick={() => {
                         setSelectedCountry(country);
-                        setIsDropdownOpen(false);
+                        setLocationsStatus(LocationsFetchStatus.IDLE);
                       }}
                     >
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">{country.flag}</span>
-                        <span>{country.name}</span>
-                      </div>
-                      <span className="text-xs text-gray-400">
-                        {country.latency}
-                      </span>
+                      <span className="text-xl">{country.flag}</span>
+                      <span>{country.name}</span>
                     </button>
-                  ))}
-                </div>
-              </div>
-            )}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         </div>
 
@@ -174,28 +216,34 @@ export default function PopupContent() {
         <button
           className={cn(
             "w-full py-3 px-4 rounded-lg font-bold text-center relative overflow-hidden",
-            isConnected
+            connectionStatus === ConnectionStatus.CONNECTED
               ? "bg-gradient-to-r from-green-500 to-emerald-600"
               : "bg-gradient-to-r from-cyan-500 to-blue-600"
           )}
           onClick={handleConnect}
-          disabled={isConnected === null}
+          disabled={
+            connectionStatus === ConnectionStatus.CONNECTING ||
+            locationsStatus === LocationsFetchStatus.LOADING ||
+            !selectedCountry
+          }
         >
           <div
             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
             style={{
-              transform: isConnected ? "translateX(100%)" : "translateX(-100%)",
+              transform:
+                connectionStatus === ConnectionStatus.CONNECTED
+                  ? "translateX(100%)"
+                  : "translateX(-100%)",
             }}
           />
           <div className="flex items-center justify-center gap-2">
-            {isConnected === null ? (
+            {connectionStatus === ConnectionStatus.CONNECTING ? (
               <>Connecting...</>
             ) : (
               <>
-                {isConnected ? "Disconnect" : "Connect"}
-                {/* <Zap
-                  className={cn("w-5 h-5", isConnected ? "animate-pulse" : "")}
-                /> */}
+                {connectionStatus === ConnectionStatus.CONNECTED
+                  ? "Disconnect"
+                  : "Connect"}
               </>
             )}
           </div>
@@ -204,7 +252,9 @@ export default function PopupContent() {
         {/* Connection stats */}
         <div
           className="space-y-3 p-3 bg-gray-800/50 rounded-lg border border-gray-700"
-          style={{ opacity: isConnected ? 1 : 0.5 }}
+          style={{
+            opacity: connectionStatus === ConnectionStatus.CONNECTED ? 1 : 0.5,
+          }}
         >
           <h3 className="text-sm font-semibold text-gray-300 flex items-center gap-1">
             {/* <BarChart3 className="w-4 h-4 text-cyan-400" /> */}
@@ -219,7 +269,7 @@ export default function PopupContent() {
               <div>
                 <div className="text-xs text-gray-400">Location</div>
                 <div className="font-medium">
-                  {selectedCountry.flag} {selectedCountry.name}
+                  {selectedCountry?.flag} {selectedCountry?.name}
                 </div>
               </div>
             </div>
@@ -241,7 +291,7 @@ export default function PopupContent() {
               <div>
                 <div className="text-xs text-gray-400">Speed</div>
                 <div className="font-medium">
-                  {isConnected ? (
+                  {connectionStatus === ConnectionStatus.CONNECTED ? (
                     <span key={`speed-${Math.random()}`}>
                       {connectionSpeed.down.toFixed(1)} Mbps
                     </span>
@@ -259,7 +309,7 @@ export default function PopupContent() {
               <div>
                 <div className="text-xs text-gray-400">Data Usage</div>
                 <div className="font-medium">
-                  {isConnected ? (
+                  {connectionStatus === ConnectionStatus.CONNECTED ? (
                     <span key={`data-${Math.random()}`}>
                       {formatData(dataUsage.down)}
                     </span>
@@ -271,7 +321,7 @@ export default function PopupContent() {
             </div>
           </div>
 
-          {isConnected && (
+          {connectionStatus === ConnectionStatus.CONNECTED && (
             <div className="pt-2 border-t border-gray-700">
               <div className="flex justify-between items-center text-xs text-gray-400">
                 <span>Blockchain Verification</span>
@@ -290,7 +340,7 @@ export default function PopupContent() {
 
       {/* Footer */}
       <div className="px-4 py-2 text-xs text-center text-gray-500 border-t border-gray-800">
-        Secured with blockchain technology • v1.0.4
+        Made with ❤️ for a better internet
       </div>
 
       {/* Add CSS for simple animations that were previously handled by Framer Motion */}
