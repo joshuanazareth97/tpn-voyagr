@@ -1,7 +1,7 @@
 {
   "name": "@tpn-voyagr/chrome-extension",
   "version": "0.0.1",
-  "description": "A chrome extension that lets the browser connected to Tafou's VPN",
+  "description": "Voyagr VPN - A Chrome extension that connects your browser to a secure VPN. Powered by Taofu",
   "author": "joshuanazareth",
   "license": "MIT",
   "scripts": {
@@ -10,8 +10,17 @@
     "prettier": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'"
   },
   "dependencies": {
+    "@tailwindcss/cli": "^4.1.4",
+    "@tailwindcss/postcss": "^4.1.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.7.4",
+    "lucide-react": "^0.503.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "tailwind-merge": "^3.2.0",
+    "three": "^0.175.0",
+    "tw-animate-css": "^1.2.8"
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",
@@ -22,6 +31,7 @@
     "@types/chrome": "^0.0.202",
     "@types/react": "^18.0.26",
     "@types/react-dom": "^18.0.10",
+    "autoprefixer": "^10.4.21",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^9.1.2",
     "babel-preset-react-app": "^10.0.1",
@@ -39,6 +49,9 @@
     "fs-extra": "^11.1.0",
     "html-loader": "^4.2.0",
     "html-webpack-plugin": "^5.5.0",
+    "postcss": "^8.5.3",
+    "postcss-cli": "^11.0.1",
+    "postcss-loader": "^8.1.1",
     "prettier": "^2.8.3",
     "react-refresh": "^0.14.0",
     "react-refresh-typescript": "^2.0.7",
@@ -46,6 +59,7 @@
     "sass-loader": "^13.2.0",
     "source-map-loader": "^3.0.1",
     "style-loader": "^3.3.1",
+    "tailwindcss": "^4.1.4",
     "terser-webpack-plugin": "^5.3.6",
     "ts-loader": "^9.4.2",
     "type-fest": "^3.5.2",

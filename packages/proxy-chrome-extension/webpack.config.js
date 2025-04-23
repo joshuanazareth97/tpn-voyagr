@@ -7,7 +7,6 @@ var webpack = require("webpack"),
   TerserPlugin = require("terser-webpack-plugin");
 var { CleanWebpackPlugin } = require("clean-webpack-plugin");
 var ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
-var ReactRefreshTypeScript = require("react-refresh-typescript");
 
 const ASSET_PATH = process.env.ASSET_PATH || "/";
 
@@ -45,7 +44,7 @@ var options = {
     panel: path.join(__dirname, "src", "pages", "Panel", "index.jsx"),
   },
   chromeExtensionBoilerplate: {
-    notHotReload: ["background", "contentScript", "devtools"],
+    notHotReload: ["background", "contentScript"],
   },
   output: {
     filename: "[name].bundle.js",
@@ -66,15 +65,18 @@ var options = {
           {
             loader: "css-loader",
           },
+          // {
+          //   loader: "sass-loader",
+          //   options: {
+          //     sourceMap: true,
+          //     api: "modern",
+          //     sassOptions: {
+          //       outputStyle: "compressed",
+          //     },
+          //   },
+          // },
           {
-            loader: "sass-loader",
-            options: {
-              sourceMap: true,
-              implementation: require("sass"),
-              sassOptions: {
-                outputStyle: "compressed",
-              },
-            },
+            loader: "postcss-loader",
           },
         ],
       },
@@ -179,12 +181,6 @@ var options = {
       ],
     }),
     new HtmlWebpackPlugin({
-      template: path.join(__dirname, "src", "pages", "Newtab", "index.html"),
-      filename: "newtab.html",
-      chunks: ["newtab"],
-      cache: false,
-    }),
-    new HtmlWebpackPlugin({
       template: path.join(__dirname, "src", "pages", "Options", "index.html"),
       filename: "options.html",
       chunks: ["options"],
@@ -194,12 +190,6 @@ var options = {
       template: path.join(__dirname, "src", "pages", "Popup", "index.html"),
       filename: "popup.html",
       chunks: ["popup"],
-      cache: false,
-    }),
-    new HtmlWebpackPlugin({
-      template: path.join(__dirname, "src", "pages", "Devtools", "index.html"),
-      filename: "devtools.html",
-      chunks: ["devtools"],
       cache: false,
     }),
     new HtmlWebpackPlugin({
