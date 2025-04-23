@@ -2,6 +2,17 @@ import {
   getServerLocations,
   connectToServer,
 } from "../../services/proxyDispatcher.service";
+import * as dataUsageService from "../../services/dataUsage.service";
+
+// Hook into chrome.sockets.tcp to track data usage
+chrome.sockets.tcp.onReceive.addListener((info) => {
+  dataUsageService.addDown(info.data.byteLength);
+});
+const originalTcpSend = chrome.sockets.tcp.send;
+chrome.sockets.tcp.send = (socketId, data, callback) => {
+  dataUsageService.addUp(data.byteLength);
+  return originalTcpSend.call(chrome.sockets.tcp, socketId, data, callback);
+};
 
 // Listen for messages from popup and dispatch to service worker
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -13,6 +24,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse({ error: err.message });
       });
   } else if (msg.action === "connectToServer") {
+    dataUsageService.init();
     connectToServer(msg.serverId)
       .then((tunnel) => {
         // Apply Chrome proxy settings using tunnel info
@@ -49,6 +61,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse({ error: err.message });
       });
   } else if (msg.action === "disconnectFromServer") {
+    dataUsageService.reset();
     // Clear active proxy settings
     chrome.proxy.settings.clear({}, () => {
       console.log("Cleared proxy settings on disconnect");
@@ -58,6 +71,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       console.log("Removed proxyConfig and proxyMetadata from storage");
     });
     sendResponse({ success: true });
+  } else if (msg.action === "getDataUsage") {
+    sendResponse(dataUsageService.getDataUsage());
+  } else if (msg.action === "getConnectionSpeed") {
+    sendResponse(dataUsageService.getSpeed());
   }
   return true; // keep channel open for async response
 });

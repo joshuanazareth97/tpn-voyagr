@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
-import {
-  ServerLocation,
-  TunnelResponse,
-} from "../../services/proxyDispatcher.service";
+import React, { useEffect, useState } from "react";
 import { LocationIcon } from "../../assets/icons";
+import { StatItem } from "../../components/StatItem";
+import { formatBytes } from "../../lib/formatBytes";
 import { cn } from "../../lib/utils";
+import { ServerLocation } from "../../services/proxyDispatcher.service";
 import { getProxyState } from "../../services/storage.service";
 
 enum ConnectionStatus {
@@ -91,6 +90,30 @@ export default function PopupContent() {
     return () => clearInterval(interval);
   }, [connectionStatus]);
 
+  useEffect(() => {
+    let usageInterval: NodeJS.Timeout;
+    if (connectionStatus === ConnectionStatus.CONNECTED) {
+      const fetchStats = () => {
+        chrome.runtime.sendMessage({ action: "getDataUsage" }, (resp) => {
+          if (resp?.up != null && resp?.down != null) {
+            setDataUsage({ up: resp.up, down: resp.down });
+          }
+        });
+        chrome.runtime.sendMessage({ action: "getConnectionSpeed" }, (resp) => {
+          if (resp?.up != null && resp?.down != null) {
+            setConnectionSpeed({ up: resp.up, down: resp.down });
+          }
+        });
+      };
+      fetchStats();
+      usageInterval = setInterval(fetchStats, 1000);
+    } else {
+      setDataUsage({ up: 0, down: 0 });
+      setConnectionSpeed({ up: 0, down: 0 });
+    }
+    return () => clearInterval(usageInterval);
+  }, [connectionStatus]);
+
   const handleConnect = () => {
     if (connectionStatus === ConnectionStatus.OFFLINE && selectedCountry) {
       setConnectionStatus(ConnectionStatus.CONNECTING);
@@ -130,12 +153,6 @@ export default function PopupContent() {
       .padStart(2, "0")}`;
   };
 
-  const formatData = (data: number) => {
-    return data < 1
-      ? `${(data * 1000).toFixed(0)} KB`
-      : `${data.toFixed(2)} MB`;
-  };
-
   return (
     <div className="w-[360px] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-visible border border-gray-700 shadow-2xl">
       {/* Header */}
@@ -165,8 +182,6 @@ export default function PopupContent() {
       <div className="p-4 space-y-4">
         <div className="space-y-2">
           <label className="text-xs text-gray-400 flex items-center gap-1">
-            {/* <Globe className="w-3 h-3" />  */}
-            <LocationIcon />
             SELECT LOCATION
           </label>
           <div className="relative">
@@ -179,12 +194,6 @@ export default function PopupContent() {
                 <span className="text-xl">{selectedCountry?.flag}</span>
                 <span>{selectedCountry?.name}</span>
               </div>
-              {/* <ChevronDown
-                className={cn(
-                  "w-5 h-5 text-gray-400 transition-transform",
-                  isDropdownOpen ? "transform rotate-180" : ""
-                )}
-              /> */}
             </button>
             {locationsStatus === LocationsFetchStatus.LOADING && (
               <div>Loading locations...</div>
@@ -212,7 +221,6 @@ export default function PopupContent() {
           </div>
         </div>
 
-        {/* Connect button */}
         <button
           className={cn(
             "w-full py-3 px-4 rounded-lg font-bold text-center relative overflow-hidden",
@@ -237,6 +245,9 @@ export default function PopupContent() {
             }}
           />
           <div className="flex items-center justify-center gap-2">
+            {connectionStatus === ConnectionStatus.OFFLINE ? (
+              <LocationIcon />
+            ) : null}
             {connectionStatus === ConnectionStatus.CONNECTING ? (
               <>Connecting...</>
             ) : (
@@ -257,79 +268,24 @@ export default function PopupContent() {
           }}
         >
           <h3 className="text-sm font-semibold text-gray-300 flex items-center gap-1">
-            {/* <BarChart3 className="w-4 h-4 text-cyan-400" /> */}
             Connection Statistics
           </h3>
 
           <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center gap-2 text-sm">
-              <div className="w-8 h-8 rounded-full bg-gray-700/50 flex items-center justify-center">
-                {/* <Globe className="w-4 h-4 text-cyan-400" /> */}
-              </div>
-              <div>
-                <div className="text-xs text-gray-400">Location</div>
-                <div className="font-medium">
-                  {selectedCountry?.flag} {selectedCountry?.name}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 text-sm">
-              <div className="w-8 h-8 rounded-full bg-gray-700/50 flex items-center justify-center">
-                {/* <Clock className="w-4 h-4 text-cyan-400" /> */}
-              </div>
-              <div>
-                <div className="text-xs text-gray-400">Connected Time</div>
-                <div className="font-medium">{formatTime(connectionTime)}</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 text-sm">
-              <div className="w-8 h-8 rounded-full bg-gray-700/50 flex items-center justify-center">
-                {/* <Wifi className="w-4 h-4 text-cyan-400" /> */}
-              </div>
-              <div>
-                <div className="text-xs text-gray-400">Speed</div>
-                <div className="font-medium">
-                  {connectionStatus === ConnectionStatus.CONNECTED ? (
-                    <span key={`speed-${Math.random()}`}>
-                      {connectionSpeed.down.toFixed(1)} Mbps
-                    </span>
-                  ) : (
-                    "—"
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 text-sm">
-              <div className="w-8 h-8 rounded-full bg-gray-700/50 flex items-center justify-center">
-                {/* <Database className="w-4 h-4 text-cyan-400" /> */}
-              </div>
-              <div>
-                <div className="text-xs text-gray-400">Data Usage</div>
-                <div className="font-medium">
-                  {connectionStatus === ConnectionStatus.CONNECTED ? (
-                    <span key={`data-${Math.random()}`}>
-                      {formatData(dataUsage.down)}
-                    </span>
-                  ) : (
-                    "—"
-                  )}
-                </div>
-              </div>
-            </div>
+            <StatItem label="Location" value={selectedCountry?.name} />
+            <StatItem
+              label="Connected Time"
+              value={formatTime(connectionTime)}
+            />
+            <StatItem
+              label="Speed"
+              value={`${formatBytes(connectionSpeed.down)}/s`}
+            />
+            <StatItem label="Data Usage" value={formatBytes(dataUsage.down)} />
           </div>
 
-          {connectionStatus === ConnectionStatus.CONNECTED && (
+          {connectionStatus === ConnectionStatus.CONNECTING && (
             <div className="pt-2 border-t border-gray-700">
-              <div className="flex justify-between items-center text-xs text-gray-400">
-                <span>Blockchain Verification</span>
-                <span className="flex items-center gap-1">
-                  <span className="secure-text">Secure</span>
-                  <div className="w-2 h-2 rounded-full bg-green-400 secure-dot" />
-                </span>
-              </div>
               <div className="w-full h-1 bg-gray-700 rounded-full mt-1 overflow-hidden">
                 <div className="h-full bg-gradient-to-r from-cyan-400 to-purple-500 progress-bar" />
               </div>
@@ -343,7 +299,6 @@ export default function PopupContent() {
         Made with ❤️ for a better internet
       </div>
 
-      {/* Add CSS for simple animations that were previously handled by Framer Motion */}
       <style>{`
         .progress-bar {
           width: 100%;
