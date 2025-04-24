@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Script for TPN Proxy",
   "main": "src/index.js",
+  "type": "module",
   "license": "MIT",
   "scripts": {
     "start": "nodemon .",
