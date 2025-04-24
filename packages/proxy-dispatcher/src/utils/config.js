@@ -84,6 +84,7 @@ class Config {
       this.#socks5BindHost = result.SOCKS5_BIND_HOST;
       this.#controlPort = result.CONTROL_PORT;
       this.#defaultRegions = result.DEFAULT_REGIONS;
+      this.#logLevel = result.LOG_LEVEL;
 
       logger
         .createContextLogger("Config")
@@ -126,6 +127,10 @@ class Config {
 
   get defaultRegions() {
     return this.#defaultRegions;
+  }
+
+  get logLevel() {
+    return this.#logLevel;
   }
 }
 
