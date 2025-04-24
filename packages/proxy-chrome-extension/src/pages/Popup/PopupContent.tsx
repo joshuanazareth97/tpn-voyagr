@@ -3,7 +3,8 @@ import {
   ShieldIcon,
   TimeIcon,
   LightningIcon,
-  LocationIcon,
+  GlobeIcon,
+  LocationPin,
 } from "../../assets/icons";
 import { StatItem } from "../../components/StatItem";
 import { cn } from "../../lib/utils";
@@ -180,7 +181,7 @@ export default function PopupContent() {
       <div className="p-4 space-y-4">
         <div className="space-y-2">
           <label className="text-xs font-bold text-gray-400 flex items-center gap-2">
-            <LocationIcon />
+            <GlobeIcon />
             Select Location
           </label>
           <div className="relative">
@@ -276,17 +277,17 @@ export default function PopupContent() {
 
           <div className="grid grid-cols-2 gap-x-2 gap-y-4">
             <StatItem
-              icon="🏳️"
+              icon={<LocationPin className="text-blue-400" />}
               label="Location"
               value={selectedCountry?.name}
             />
             <StatItem
-              icon={<TimeIcon />}
+              icon={<TimeIcon className="text-blue-400" />}
               label="Connected Time"
               value={formatTime(connectionTime)}
             />
             <StatItem
-              icon={<LocationIcon />}
+              icon={<GlobeIcon className="text-blue-400" />}
               label="IP Address"
               value={ipAddress}
             />
