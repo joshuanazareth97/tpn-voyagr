@@ -19,7 +19,7 @@ fi
 
 ENVIRONMENT=${1:-"test"}
 echo "Deploying in $ENVIRONMENT mode..."
-APP_DIR="/opt/proxy-dispatcher"
+APP_DIR="../"
 
 # Configuration
 if [ "$ENVIRONMENT" = "production" ]; then
@@ -75,15 +75,6 @@ if ! command -v wireproxy &>/dev/null; then
     fi
   fi
 fi
-
-# 4. Copy application and dependencies
-echo "Setting up application in $APP_DIR..."
-mkdir -p $APP_DIR/logs
-echo "Copying application files..."
-cp -r $(dirname $(dirname $0))/* $APP_DIR/
-echo "Installing dependencies..."
-cd $APP_DIR
-npm install --production
 
 # 5. Create environment file
 echo "Creating environment file..."
