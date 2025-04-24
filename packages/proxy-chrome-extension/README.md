@@ -27,6 +27,7 @@ Created using the wonderful [Samuel Simões' boilerplate](https://github.com/sam
 ### Project Structure
 
 All extension code must be placed in the `src` folder.
+
 - Popup interface
 - Options page (implemented with TypeScript)
 - Background script
@@ -34,6 +35,7 @@ All extension code must be placed in the `src` folder.
 ### Build from Source
 
 Create a production build with:
+
 ```
 $ NODE_ENV=production npm run build
 ```
@@ -42,7 +44,9 @@ The `build` folder will contain the extension ready for Chrome Web Store submiss
 The `zip` folder will contain a zipped version of the extension.
 
 ### Installation on Chrome
-1. Go to the github releases page and download the latest release.
-2. Open Chrome and navigate to `chrome://extensions/`.
-3. Enable "Developer mode" in the top right corner.
-4. 
+
+1. Go to the github releases page and download the latest release zip.
+2. Unzip the downloaded file.
+3. Open Chrome and navigate to `chrome://extensions/`.
+4. Enable "Developer mode" in the top right corner.
+5. Click "Load unpacked" and select the unzipped extension folder.

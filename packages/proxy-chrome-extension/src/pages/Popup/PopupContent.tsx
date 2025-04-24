@@ -9,7 +9,7 @@ import {
 import { StatItem } from "../../components/StatItem";
 import { cn } from "../../lib/utils";
 import { ServerLocation } from "../../services/proxyDispatcher.service";
-import { getProxyState } from "../../services/storage.service";
+import { getProxyState, getProxyOptions } from "../../services/storage.service";
 
 enum ConnectionStatus {
   OFFLINE,
@@ -44,17 +44,51 @@ export default function PopupContent() {
   const [dataUsage, setDataUsage] = useState({ up: 0, down: 0 });
   const [connectionSpeed, setConnectionSpeed] = useState({ up: 0, down: 0 });
 
-  // Load server locations from background
+  // Load server locations and apply preferred region if set
   useEffect(() => {
-    chrome.runtime.sendMessage({ action: "getServerLocations" }, (resp) => {
-      if (resp?.locations) {
-        setCountries(resp.locations);
-        setSelectedCountry(resp.locations[0] || null);
-      } else {
-        setError("Failed to load locations");
+    const loadLocationsAndSettings = async () => {
+      try {
+        // Get user preferences first
+        const options = await getProxyOptions();
+        const preferredRegion = options?.preferredRegion || "";
+
+        // Then load available locations
+        chrome.runtime.sendMessage({ action: "getServerLocations" }, (resp) => {
+          if (resp?.locations) {
+            setCountries(resp.locations);
+
+            // If we have a preferred region and it's available, select it
+            if (preferredRegion) {
+              const preferredCountry = resp.locations.find(
+                (country: ServerLocation) =>
+                  country.id.toLowerCase() === preferredRegion.toLowerCase()
+              );
+
+              if (preferredCountry) {
+                setSelectedCountry(preferredCountry);
+              } else {
+                // Fall back to first country if preferred not found
+                setSelectedCountry(resp.locations[0] || null);
+              }
+            } else {
+              // No preference, use first country
+              setSelectedCountry(resp.locations[0] || null);
+            }
+          } else {
+            setError("Failed to load locations");
+            setLocationsStatus(LocationsFetchStatus.ERROR);
+            return;
+          }
+          setLocationsStatus(LocationsFetchStatus.SUCCESS);
+        });
+      } catch (error) {
+        console.error("Error loading settings:", error);
+        setError("Failed to load settings");
+        setLocationsStatus(LocationsFetchStatus.ERROR);
       }
-      setLocationsStatus(LocationsFetchStatus.SUCCESS);
-    });
+    };
+
+    loadLocationsAndSettings();
   }, []);
 
   // Rehydrate proxy config & metadata when popup opens

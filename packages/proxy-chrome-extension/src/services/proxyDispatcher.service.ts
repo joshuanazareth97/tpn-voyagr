@@ -22,15 +22,42 @@ export interface ServerLocation {
   flag: string;
 }
 
-// Base API URL for the proxy dispatcher
-const PROXY_DISPATCHER_URL = "http://localhost:1081"; // Default port for the proxy dispatcher
+// Default API URL for the proxy dispatcher
+const DEFAULT_PROXY_DISPATCHER_URL = "http://localhost:1081";
+
+// Function to get the proxy dispatcher URL from chrome storage
+const getProxyDispatcherUrl = async (): Promise<string> => {
+  return new Promise((resolve) => {
+    try {
+      chrome.storage.sync.get("proxyOptions", (data) => {
+        // Check for chrome.runtime.lastError which indicates a storage error
+        if (chrome.runtime.lastError) {
+          console.error("Storage error:", chrome.runtime.lastError);
+          resolve(DEFAULT_PROXY_DISPATCHER_URL);
+          return;
+        }
+        
+        if (data.proxyOptions?.orchestratorEndpoint) {
+          resolve(data.proxyOptions.orchestratorEndpoint);
+        } else {
+          resolve(DEFAULT_PROXY_DISPATCHER_URL);
+        }
+      });
+    } catch (err) {
+      // Extra fallback in case chrome.storage isn't available or throws
+      console.error("Storage API error:", err);
+      resolve(DEFAULT_PROXY_DISPATCHER_URL);
+    }
+  });
+};
 
 /**
  * Get available server locations (countries/regions)
  */
 export const getServerLocations = async (): Promise<ServerLocation[]> => {
   try {
-    const response = await fetch(`${PROXY_DISPATCHER_URL}/countries`);
+    const baseUrl = await getProxyDispatcherUrl();
+    const response = await fetch(`${baseUrl}/countries`);
     if (!response.ok) {
       throw new Error(
         `Error fetching available countries: ${response.statusText}`
@@ -63,7 +90,8 @@ export const connectToServer = async (
     // Convert serverId to uppercase as the API expects uppercase region codes
     const region = serverId.toUpperCase();
 
-    const response = await fetch(`${PROXY_DISPATCHER_URL}/tunnel/${region}`);
+    const baseUrl = await getProxyDispatcherUrl();
+    const response = await fetch(`${baseUrl}/tunnel/${region}`);
 
     if (!response.ok) {
       throw new Error(
