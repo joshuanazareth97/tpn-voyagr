@@ -22,15 +22,29 @@ export interface ServerLocation {
   flag: string;
 }
 
-// Base API URL for the proxy dispatcher
-const PROXY_DISPATCHER_URL = "http://localhost:1081"; // Default port for the proxy dispatcher
+// Default API URL for the proxy dispatcher
+const DEFAULT_PROXY_DISPATCHER_URL = "http://localhost:1081";
+
+// Function to get the proxy dispatcher URL from chrome storage
+const getProxyDispatcherUrl = async (): Promise<string> => {
+  return new Promise((resolve) => {
+    chrome.storage.sync.get("proxyOptions", (data) => {
+      if (data.proxyOptions?.orchestratorEndpoint) {
+        resolve(data.proxyOptions.orchestratorEndpoint);
+      } else {
+        resolve(DEFAULT_PROXY_DISPATCHER_URL);
+      }
+    });
+  });
+};
 
 /**
  * Get available server locations (countries/regions)
  */
 export const getServerLocations = async (): Promise<ServerLocation[]> => {
   try {
-    const response = await fetch(`${PROXY_DISPATCHER_URL}/countries`);
+    const baseUrl = await getProxyDispatcherUrl();
+    const response = await fetch(`${baseUrl}/countries`);
     if (!response.ok) {
       throw new Error(
         `Error fetching available countries: ${response.statusText}`
@@ -62,8 +76,9 @@ export const connectToServer = async (
   try {
     // Convert serverId to uppercase as the API expects uppercase region codes
     const region = serverId.toUpperCase();
-
-    const response = await fetch(`${PROXY_DISPATCHER_URL}/tunnel/${region}`);
+    
+    const baseUrl = await getProxyDispatcherUrl();
+    const response = await fetch(`${baseUrl}/tunnel/${region}`);
 
     if (!response.ok) {
       throw new Error(
