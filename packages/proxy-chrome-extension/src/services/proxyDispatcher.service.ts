@@ -8,7 +8,7 @@ import { countryFlags, countryNames } from "../constants/countries";
 
 // Types
 export interface TunnelResponse {
-  region: string | null;
+  host: string | null;
   port?: number | null;
 }
 
@@ -76,7 +76,7 @@ export const connectToServer = async (
     console.error("Failed to connect to server:", error);
     return {
       port: null,
-      region: null,
+      host: null,
     };
   }
 };

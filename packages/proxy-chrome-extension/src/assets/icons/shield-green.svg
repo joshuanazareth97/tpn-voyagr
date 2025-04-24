@@ -4,7 +4,7 @@
 		transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)">
 		<path
 			d="M 45 90 c -0.634 0 -1.268 -0.172 -1.829 -0.516 C 17.867 73.972 5.206 52.473 4.461 23.759 c -0.034 -1.314 0.671 -2.536 1.825 -3.165 l 37.04 -20.168 c 1.044 -0.568 2.305 -0.568 3.348 0 l 37.04 20.168 c 1.154 0.628 1.859 1.851 1.825 3.165 c -0.745 28.713 -13.407 50.212 -38.71 65.725 C 46.269 89.828 45.634 90 45 90 z M 11.539 25.705 C 12.743 50.111 23.71 68.683 45 82.368 c 21.289 -13.686 32.257 -32.256 33.461 -56.663 L 45 7.485 L 11.539 25.705 z"
-			style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: #121212; fill-rule: nonzero; opacity: 1;"
+			style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: #27ae60; fill-rule: nonzero; opacity: 1;"
 			transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round" />
 	</g>
 </svg>

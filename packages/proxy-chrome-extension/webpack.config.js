@@ -37,10 +37,9 @@ const isDevelopment = process.env.NODE_ENV !== "production";
 var options = {
   mode: process.env.NODE_ENV || "development",
   entry: {
-    options: path.join(__dirname, "src", "pages", "Options", "index.jsx"),
-    popup: path.join(__dirname, "src", "pages", "Popup", "index.jsx"),
-    background: path.join(__dirname, "src", "pages", "Background", "index.js"),
-    panel: path.join(__dirname, "src", "pages", "Panel", "index.jsx"),
+    options: path.join(__dirname, "src", "pages", "Options", "index.tsx"),
+    popup: path.join(__dirname, "src", "pages", "Popup", "index.tsx"),
+    background: path.join(__dirname, "src", "pages", "Background", "index.ts"),
   },
   chromeExtensionBoilerplate: {
     notHotReload: ["background", "contentScript"],
@@ -164,7 +163,34 @@ var options = {
     new CopyWebpackPlugin({
       patterns: [
         {
+          from: "src/assets/img/icon-48.png",
+          to: path.join(__dirname, "build"),
+          force: true,
+        },
+      ],
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
           from: "src/assets/img/icon-32.png",
+          to: path.join(__dirname, "build"),
+          force: true,
+        },
+      ],
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: "src/assets/img/icon-32_green.png",
+          to: path.join(__dirname, "build"),
+          force: true,
+        },
+      ],
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: "src/assets/img/icon-16.png",
           to: path.join(__dirname, "build"),
           force: true,
         },
@@ -180,12 +206,6 @@ var options = {
       template: path.join(__dirname, "src", "pages", "Popup", "index.html"),
       filename: "popup.html",
       chunks: ["popup"],
-      cache: false,
-    }),
-    new HtmlWebpackPlugin({
-      template: path.join(__dirname, "src", "pages", "Panel", "index.html"),
-      filename: "panel.html",
-      chunks: ["panel"],
       cache: false,
     }),
   ].filter(Boolean),
