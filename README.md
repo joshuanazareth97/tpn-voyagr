@@ -6,7 +6,9 @@ Lease a secure, low-latency tunnel from the awesome Tensor Private Network in un
 ---
 
 <!-- 📸 Extension UI screenshot -->
-![Voyagr VPN UI](./screenshots/extension-ui.png)
+![Voyagr VPN UI](./screenshots/extension-ui_connected.png) 
+![Voyagr VPN UI - Diconnected](./screenshots/extension-ui_connected.png)
+
 
 ## Table of Contents
 - [Voyagr VPN — Decentralized, Plug-and-Play Browser VPN](#voyagr-vpn--decentralized-plug-and-play-browser-vpn)
@@ -17,6 +19,7 @@ Lease a secure, low-latency tunnel from the awesome Tensor Private Network in un
   - [🚀 Our Solution: Voyagr VPN](#-our-solution-voyagr-vpn)
   - [Technical Implementation](#technical-implementation)
   - [🚧 Roadmap / Next Steps](#-roadmap--next-steps)
+  - [Demo](#demo)
   - [📄 License \& Acknowledgements](#-license--acknowledgements)
 
 ---
@@ -58,6 +61,9 @@ This repository contains two main components:
 - [ ] Better Tunnel Management (start  / stop / queuing)
 
 ---
+
+## Demo
+![Demo](./screenshots/voyagr_vpn_demo.mp4)
 
 ## 📄 License & Acknowledgements
 - [MIT License](./LICENSE)  
