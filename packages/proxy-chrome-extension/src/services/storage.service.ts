@@ -122,7 +122,7 @@ export const saveProxyOptions = (options: ProxyOptions): Promise<void> => {
  */
 export const getDefaultProxyOptions = (): ProxyOptions => {
   return {
-    orchestratorEndpoint: "http://localhost:1081",
+    orchestratorEndpoint: "http://122.172.85.219:1081",
     preferredRegion: "",
     bypassRules: ["<local>"],
   };

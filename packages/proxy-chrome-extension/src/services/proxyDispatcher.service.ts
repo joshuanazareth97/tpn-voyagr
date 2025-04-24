@@ -23,7 +23,7 @@ export interface ServerLocation {
 }
 
 // Default API URL for the proxy dispatcher
-const DEFAULT_PROXY_DISPATCHER_URL = "http://localhost:1081";
+const DEFAULT_PROXY_DISPATCHER_URL = "http://122.172.85.219:1081";
 
 // Function to get the proxy dispatcher URL from chrome storage
 const getProxyDispatcherUrl = async (): Promise<string> => {
