@@ -36,10 +36,7 @@ fi
 echo "Updating system and installing dependencies..."
 sudo apt-get update
 sudo apt-get upgrade -y
-sudo apt-get install -y curl git build-essential ufw
-# Ensure UFW is enabled
-echo "Enabling UFW..."
-sudo ufw enable
+sudo apt-get install -y curl git build-essential
 
 # 2. Install Node.js if not already installed
 if ! command -v node &>/dev/null; then
