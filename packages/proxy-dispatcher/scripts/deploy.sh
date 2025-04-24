@@ -78,75 +78,27 @@ if ! command -v wireproxy &>/dev/null; then
   fi
 fi
 
-# 4. Install PM2 for process management
-echo "Installing PM2..."
-sudo npm install -g pm2
-
-# 5. Setup application directory
-APP_DIR="/opt/proxy-dispatcher"
+# 4. Copy application and dependencies
 echo "Setting up application in $APP_DIR..."
-sudo mkdir -p $APP_DIR
-sudo chown $USER:$USER $APP_DIR
-
-# 6. Copy application files
+mkdir -p $APP_DIR/logs
 echo "Copying application files..."
 cp -r ../packages/proxy-dispatcher/* $APP_DIR/
-
-# 7. Install dependencies
 echo "Installing dependencies..."
 cd $APP_DIR
 npm install --production
 
-# 8. Create environment file
+# 5. Create environment file
 echo "Creating environment file..."
 cat >$APP_DIR/.env <<EOL
 DEFAULT_REGIONS=${DEFAULT_REGIONS}
 CONTROL_PORT=${CONTROL_PORT}
 EOL
 
-# 9. Setup PM2 process file
-echo "Creating PM2 configuration..."
-cat >$APP_DIR/ecosystem.config.js <<EOL
-module.exports = {
-  apps: [{
-    name: 'proxy-dispatcher',
-    script: 'src/index.js',
-    env: {
-      NODE_ENV: '${ENVIRONMENT}',
-      DEFAULT_REGIONS: '${DEFAULT_REGIONS}',
-      CONTROL_PORT: ${CONTROL_PORT}
-    },
-    max_memory_restart: '256M',
-    log_date_format: 'YYYY-MM-DD HH:mm:ss',
-    error_file: 'logs/error.log',
-    out_file: 'logs/out.log',
-    time: true,
-    restart_delay: 3000,
-    max_restarts: 10
-  }]
-};
-EOL
-
-# 10. Create log directory
-mkdir -p $APP_DIR/logs
-
-# 11. Setup firewall
-echo "Configuring firewall..."
-# Allow SSH and application ports
-sudo ufw allow 22/tcp
-sudo ufw allow ${CONTROL_PORT}/tcp
-sudo ufw allow 10000:15000/tcp comment "SOCKS5 proxy dynamic ports"
-
-# 12. Start the application with PM2
-echo "Starting application with PM2..."
+# 6. Start the application with Node.js
+echo "Starting application with Node.js..."
 cd $APP_DIR
-pm2 start ecosystem.config.js
-pm2 save
-
-# 13. Setup PM2 to start on boot
-echo "Setting up PM2 to start on system boot..."
-sudo pm2 startup
-sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u $USER --hp $HOME
+# Run in background with nohup
+nohup node src/index.js >logs/out.log 2>logs/error.log &
 
 echo "Deployment completed! Proxy dispatcher running on port ${CONTROL_PORT}"
 echo "Configure your application to use SOCKS5 proxies at 127.0.0.1:<dynamic_port> obtained from the control API"
