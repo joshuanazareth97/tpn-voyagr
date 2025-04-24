@@ -51,18 +51,19 @@ export default function PopupContent() {
         // Get user preferences first
         const options = await getProxyOptions();
         const preferredRegion = options?.preferredRegion || "";
-        
+
         // Then load available locations
         chrome.runtime.sendMessage({ action: "getServerLocations" }, (resp) => {
           if (resp?.locations) {
             setCountries(resp.locations);
-            
+
             // If we have a preferred region and it's available, select it
             if (preferredRegion) {
               const preferredCountry = resp.locations.find(
-                country => country.id.toLowerCase() === preferredRegion.toLowerCase()
+                (country: ServerLocation) =>
+                  country.id.toLowerCase() === preferredRegion.toLowerCase()
               );
-              
+
               if (preferredCountry) {
                 setSelectedCountry(preferredCountry);
               } else {
@@ -84,7 +85,7 @@ export default function PopupContent() {
         setLocationsStatus(LocationsFetchStatus.ERROR);
       }
     };
-    
+
     loadLocationsAndSettings();
   }, []);
 

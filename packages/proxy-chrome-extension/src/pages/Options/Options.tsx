@@ -47,7 +47,9 @@ const Options: React.FC<Props> = ({ title }: Props) => {
     setOptions({ ...options, orchestratorEndpoint: e.target.value });
   };
 
-  const handlePreferredRegionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePreferredRegionChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     // Convert to lowercase for consistency
     setOptions({ ...options, preferredRegion: e.target.value.toLowerCase() });
   };
@@ -161,8 +163,8 @@ const Options: React.FC<Props> = ({ title }: Props) => {
               placeholder="us"
             />
             <p className="text-sm text-gray-400">
-              Enter a region code (e.g., "us", "fr", "jp") to preselect when the extension opens.
-              Leave blank to select manually each time.
+              Enter a region code (e.g., "us", "fr", "jp") to preselect when the
+              extension opens. Leave blank to select manually each time.
             </p>
           </div>
 

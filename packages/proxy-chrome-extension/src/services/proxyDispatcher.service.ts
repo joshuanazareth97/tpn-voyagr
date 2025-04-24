@@ -76,7 +76,7 @@ export const connectToServer = async (
   try {
     // Convert serverId to uppercase as the API expects uppercase region codes
     const region = serverId.toUpperCase();
-    
+
     const baseUrl = await getProxyDispatcherUrl();
     const response = await fetch(`${baseUrl}/tunnel/${region}`);
 
