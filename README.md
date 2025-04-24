@@ -65,6 +65,8 @@ This repository contains two main components:
 ## Demo
 ![Demo](./demo/voyagr_vpn_demo.mp4)
 
+[On Vimeo](https://vimeo.com/1078088611)
+
 ## 📄 License & Acknowledgements
 - [MIT License](./LICENSE)  
 - Built with ❤️ by Joshua Nazareth
