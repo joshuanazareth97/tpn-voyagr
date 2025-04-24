@@ -19,6 +19,7 @@ fi
 
 ENVIRONMENT=${1:-"test"}
 echo "Deploying in $ENVIRONMENT mode..."
+APP_DIR="/opt/proxy-dispatcher"
 
 # Configuration
 if [ "$ENVIRONMENT" = "production" ]; then
@@ -79,7 +80,7 @@ fi
 echo "Setting up application in $APP_DIR..."
 mkdir -p $APP_DIR/logs
 echo "Copying application files..."
-cp -r ../packages/proxy-dispatcher/* $APP_DIR/
+cp -r $(dirname $(dirname $0))/* $APP_DIR/
 echo "Installing dependencies..."
 cd $APP_DIR
 npm install --production
