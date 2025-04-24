@@ -6,8 +6,8 @@ Lease a secure, low-latency tunnel from the awesome Tensor Private Network in un
 ---
 
 <!-- 📸 Extension UI screenshot -->
-![Voyagr VPN UI](./screenshots/extension-ui_connected.png) 
-![Voyagr VPN UI - Diconnected](./screenshots/extension-ui_connected.png)
+![Voyagr VPN UI](./demo/extension-ui_connected.png) 
+![Voyagr VPN UI - Diconnected](./demo/extension-ui_connected.png)
 
 
 ## Table of Contents
@@ -63,7 +63,7 @@ This repository contains two main components:
 ---
 
 ## Demo
-![Demo](./screenshots/voyagr_vpn_demo.mp4)
+![Demo](./demo/voyagr_vpn_demo.mp4)
 
 ## 📄 License & Acknowledgements
 - [MIT License](./LICENSE)  
