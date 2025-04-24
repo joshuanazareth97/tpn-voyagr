@@ -48,14 +48,19 @@ if ! command -v node &>/dev/null; then
   sudo apt-get install -y nodejs
 fi
 
-# 3. Install golang if not already installed
-if ! command -v go &>/dev/null; then
-  echo "Installing Go..."
-  wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz -O /tmp/go.tar.gz
-  sudo tar -C /usr/local -xzf /tmp/go.tar.gz
-  echo 'export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin' >>~/.profile
-  source ~/.profile
+# 3. Remove old Go installations and install Go 1.23
+if command -v go &>/dev/null; then
+  echo "Removing old Go installation..."
+  sudo rm -rf /usr/local/go
+  sudo apt-get remove -y golang-go
 fi
+
+echo "Installing Go 1.23..."
+wget https://go.dev/dl/go1.23.8.linux-amd64.tar.gz -O /tmp/go.tar.gz
+sudo tar -C /usr/local -xzf /tmp/go.tar.gz
+# Ensure Go bin paths are in PATH
+grep -qxF 'export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin' ~/.profile || echo 'export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin' >>~/.profile
+source ~/.profile
 
 # 3.1 Install wireproxy
 if ! command -v wireproxy &>/dev/null; then
@@ -127,6 +132,8 @@ mkdir -p $APP_DIR/logs
 
 # 11. Setup firewall
 echo "Configuring firewall..."
+# Allow SSH and application ports
+sudo ufw allow 22/tcp
 sudo ufw allow ${CONTROL_PORT}/tcp
 sudo ufw allow 10000:15000/tcp comment "SOCKS5 proxy dynamic ports"
 
