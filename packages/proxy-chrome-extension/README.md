@@ -45,7 +45,8 @@ The `zip` folder will contain a zipped version of the extension.
 
 ### Installation on Chrome
 
-1. Go to the github releases page and download the latest release.
-2. Open Chrome and navigate to `chrome://extensions/`.
-3. Enable "Developer mode" in the top right corner.
-4.
+1. Go to the github releases page and download the latest release zip.
+2. Unzip the downloaded file.
+3. Open Chrome and navigate to `chrome://extensions/`.
+4. Enable "Developer mode" in the top right corner.
+5. Click "Load unpacked" and select the unzipped extension folder.
