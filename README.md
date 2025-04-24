@@ -14,7 +14,7 @@ Lease a secure, low-latency tunnel from the awesome Tensor Private Network in un
   - [🎯 Elevator Pitch](#-elevator-pitch)
   - [🔍 Problem Statement](#-problem-statement)
     - [TPN to the rescue](#tpn-to-the-rescue)
-    - [Our Solution: Voyagr VPN](#our-solution-voyagr-vpn)
+  - [🚀 Our Solution: Voyagr VPN](#-our-solution-voyagr-vpn)
   - [Technical Implementation](#technical-implementation)
   - [🚧 Roadmap / Next Steps](#-roadmap--next-steps)
   - [📄 License \& Acknowledgements](#-license--acknowledgements)
@@ -34,7 +34,7 @@ Voyagr VPN builds on TPN’s global miner network to deliver a zero-config, brow
 ### TPN to the rescue  
 TPN incentivizes miners worldwide to run WireGuard-compatible endpoints. You call their REST API to lease diverse, censorship-resistant tunnels with a single HTTP request—no central chokepoint.
 
-### Our Solution: Voyagr VPN
+## 🚀 Our Solution: Voyagr VPN
 We build on TPN’s decentralized backbone to deliver a zero-config, browser-only VPN experience:
 
 Instant Lease via TPN API: Automatically request a WireGuard tunnel from TPN’s miner network.
