@@ -60,6 +60,6 @@ This repository contains two main components:
 ---
 
 ## 📄 License & Acknowledgements
-- MIT License  
+- [MIT License](./LICENSE)  
 - Built with ❤️ by Joshua Nazareth
 - Thanks to **Taofu** and the **TPN** miner community
