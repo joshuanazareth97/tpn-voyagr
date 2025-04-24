@@ -80,9 +80,19 @@ export const getProxyMetadata = (): Promise<ProxyMetadata | null> => {
  */
 export const getProxyOptions = (): Promise<ProxyOptions | null> => {
   return new Promise((resolve) => {
-    chrome.storage.sync.get("proxyOptions", (data) => {
-      resolve(data.proxyOptions ? (data.proxyOptions as ProxyOptions) : null);
-    });
+    try {
+      chrome.storage.sync.get("proxyOptions", (data) => {
+        if (chrome.runtime.lastError) {
+          console.error("Storage error:", chrome.runtime.lastError);
+          resolve(getDefaultProxyOptions());
+          return;
+        }
+        resolve(data.proxyOptions ? (data.proxyOptions as ProxyOptions) : getDefaultProxyOptions());
+      });
+    } catch (err) {
+      console.error("Storage API error:", err);
+      resolve(getDefaultProxyOptions());
+    }
   });
 };
 
@@ -90,10 +100,20 @@ export const getProxyOptions = (): Promise<ProxyOptions | null> => {
  * Save proxy options to storage
  */
 export const saveProxyOptions = (options: ProxyOptions): Promise<void> => {
-  return new Promise((resolve) => {
-    chrome.storage.sync.set({ proxyOptions: options }, () => {
-      resolve();
-    });
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.storage.sync.set({ proxyOptions: options }, () => {
+        if (chrome.runtime.lastError) {
+          console.error("Storage error:", chrome.runtime.lastError);
+          reject(chrome.runtime.lastError);
+          return;
+        }
+        resolve();
+      });
+    } catch (err) {
+      console.error("Storage API error:", err);
+      reject(err);
+    }
   });
 };
 

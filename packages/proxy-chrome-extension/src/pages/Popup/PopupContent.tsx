@@ -76,6 +76,8 @@ export default function PopupContent() {
             }
           } else {
             setError("Failed to load locations");
+            setLocationsStatus(LocationsFetchStatus.ERROR);
+            return;
           }
           setLocationsStatus(LocationsFetchStatus.SUCCESS);
         });

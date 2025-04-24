@@ -24,8 +24,11 @@ const Options: React.FC<Props> = ({ title }: Props) => {
 
   // Load saved options on mount and set dark mode
   useEffect(() => {
-    // Set dark mode on body
-    document.body.classList.add("dark");
+    // Set dark mode on the options page root
+    const optionsRoot = document.getElementById('options-root');
+    if (optionsRoot) {
+      optionsRoot.classList.add("dark");
+    }
 
     const loadOptions = async () => {
       const savedOptions = await getProxyOptions();
@@ -38,7 +41,10 @@ const Options: React.FC<Props> = ({ title }: Props) => {
 
     // Clean up
     return () => {
-      document.body.classList.remove("dark");
+      const optionsRoot = document.getElementById('options-root');
+      if (optionsRoot) {
+        optionsRoot.classList.remove("dark");
+      }
     };
   }, []);
 
@@ -95,9 +101,10 @@ const Options: React.FC<Props> = ({ title }: Props) => {
       await saveProxyOptions(options);
       setSaveStatus("success");
 
-      // Reset status after 3 seconds
+      // Reset status and clear field errors after 3 seconds
       setTimeout(() => {
         setSaveStatus("idle");
+        setErrors({});
       }, 3000);
     } catch (error) {
       console.error("Error saving options:", error);
